@@ -15,8 +15,6 @@
 @property (strong, nonatomic) UITextView *_placeholderTextView;
 @end
 
-static NSString * const kAttributedPlaceholderKey = @"attributedPlaceholder";
-static NSString * const kPlaceholderKey = @"placeholder";
 static NSString * const kFontKey = @"font";
 static NSString * const kAttributedTextKey = @"attributedText";
 static NSString * const kTextKey = @"text";
@@ -106,10 +104,6 @@ static NSString * const kTextAlignmentKey = @"textAlignment";
     [defaultCenter addObserver:self selector:@selector(textDidChange:)
                           name:UITextViewTextDidChangeNotification object:self];
 
-    [self addObserver:self forKeyPath:kAttributedPlaceholderKey
-              options:NSKeyValueObservingOptionNew context:nil];
-    [self addObserver:self forKeyPath:kPlaceholderKey
-              options:NSKeyValueObservingOptionNew context:nil];
     [self addObserver:self forKeyPath:kFontKey
               options:NSKeyValueObservingOptionNew context:nil];
     [self addObserver:self forKeyPath:kAttributedTextKey
@@ -137,6 +131,8 @@ static NSString * const kTextAlignmentKey = @"textAlignment";
     _placeholder = [placeholderText copy];
     _attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholderText];
 
+    self._placeholderTextView.text = placeholderText;
+
     [self resizePlaceholderFrame];
 }
 
@@ -144,6 +140,8 @@ static NSString * const kTextAlignmentKey = @"textAlignment";
 {
     _placeholder = attributedPlaceholderText.string;
     _attributedPlaceholder = [attributedPlaceholderText copy];
+
+    self._placeholderTextView.attributedText = attributedPlaceholderText;
 
     [self resizePlaceholderFrame];
 }
@@ -164,13 +162,7 @@ static NSString * const kTextAlignmentKey = @"textAlignment";
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
                         change:(NSDictionary *)change context:(void *)context
 {
-    if ([keyPath isEqualToString:kAttributedPlaceholderKey]) {
-        self._placeholderTextView.attributedText = [change valueForKey:NSKeyValueChangeNewKey];
-    }
-    else if ([keyPath isEqualToString:kPlaceholderKey]) {
-        self._placeholderTextView.text = [change valueForKey:NSKeyValueChangeNewKey];
-    }
-    else if ([keyPath isEqualToString:kFontKey]) {
+    if ([keyPath isEqualToString:kFontKey]) {
         self._placeholderTextView.font = [change valueForKey:NSKeyValueChangeNewKey];
     }
     else if ([keyPath isEqualToString:kAttributedTextKey]) {
@@ -258,8 +250,6 @@ static NSString * const kTextAlignmentKey = @"textAlignment";
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [self removeObserver:self forKeyPath:kAttributedPlaceholderKey];
-    [self removeObserver:self forKeyPath:kPlaceholderKey];
     [self removeObserver:self forKeyPath:kFontKey];
     [self removeObserver:self forKeyPath:kAttributedTextKey];
     [self removeObserver:self forKeyPath:kTextKey];
